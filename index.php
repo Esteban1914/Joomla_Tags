@@ -93,7 +93,7 @@ $mysqli = new mysqli($host,$user,$password,$database);
 
 if ($mysqli->connect_error) 
 {
-    $response_python["error"] = 'Error de coneccion a la base de datos: ('. $mysqli->connect_error .') '. $mysqli->connect_error;
+    $response_python["error"] = "Error al conectarse a la base de datos: $mysqli->connect_error";
     die(json_encode($response_python));
 }
 
@@ -101,6 +101,7 @@ foreach ($tags_ids as $key => $value)
 {   
     //Verify article exists
     $article = $mysqli->query("SELECT id FROM $table_content WHERE id = $key ");
+    
     if ($article->num_rows <= 0) 
     {   
         //No exist article
@@ -108,38 +109,74 @@ foreach ($tags_ids as $key => $value)
         array_push($response_python["error"], $error );
         continue;
     }
+    
     //Save Article ID 
     $article_id=$article->fetch_object()->id;
+    
     //Find Tags ID into tags_ids
     foreach ($value as $key1 => $value1)
     {
         //Get ID form db by Title
         $tag = $mysqli->query("SELECT id FROM $table_tags WHERE title='$value1'");
+        
         if ($tag->num_rows <= 0) 
         {   
-            //If no exist tag, create it              
+            //If no exist tag, create it     
+
+            ////////*    LAST METHOD TO FIND MAX RGT     *////////        
             //Get Max lft & rgt
-            $result=$mysqli->query("SELECT MAX(rgt) AS rgt FROM $table_tags");
-            if ($result->num_rows > 0) 
-                $max=$result->fetch_object()->rgt+1;
-            else
+            // $result=$mysqli->query("SELECT MAX(rgt) AS rgt FROM $table_tags");
+            // if ($result->num_rows > 0) 
+            //     $max=$result->fetch_object()->rgt;
+            // else
+            // {
+            //     //If no selected Tag info, Error
+            //     $error="Error 0, no se ha creado el tag:'$value1'";
+            //     array_push($response_python["error"], $error );
+            //     continue;
+            // }
+
+            //Get Max rgt from ROOT Info 
+            $result=$mysqli->query("SELECT rgt FROM $table_tags WHERE level = 0 AND title = 'ROOT'");
+            
+            if ($result->num_rows <= 0) 
             {
-                //If no selected Tag info, Error
-                $error="Error 0, no se ha creado el tag:'$value1'";
+                $error="Error 0, El parametro RGT de la fila ROOT no existe en la base de datos, se ha detenido el proceso";
                 array_push($response_python["error"], $error );
-                continue;
-            }
+                die(json_encode($response_python));
+                //Code for Create ROOT row into tags_table, is necesary find MAX and update rgt field 
+                //$mysqli->query("INSERT INTO $table_tags (`id`, `parent_id`, `lft`, `rgt`, `level`, `path`, `title`, `alias`, `note`, `description`, `published`, `checked_out`, `checked_out_time`, `access`, `params`, `metadesc`, `metakey`, `metadata`, `created_user_id`, `created_time`,`created_by_alias`, `modified_user_id`, `modified_time`, `images`, `urls`, `hits`, `language`, `version`)
+                //VALUES (1, 0, 0, 1, 0, '', 'ROOT', 'root', '', '', 1, 0, '0000-00-00 00:00:00', 1, '{}', '', '', '', '', '2011-01-01 00:00:01','', 0, '0000-00-00 00:00:00', '', '', 0, '*', 1);");
+                
+            }   
+
+            $rgt_root_lv0=$result->fetch_object()->rgt;
+            
+            //Set manualy new Max rgt ROOT Info
+            $result=$mysqli->query("UPDATE $table_tags SET rgt = $rgt_root_lv0 + 2  WHERE level = 0 AND title = 'ROOT'");
+            
+            if ( ! $result) 
+            {
+                $error="Error 1, El parametro RGT de la fila ROOT no se ha podido modificar en la base de datos, se ha detenido el proceso";
+                array_push($response_python["error"], $error );
+                die(json_encode($response_python));
+            }   
+
+            //Create Tag with rgt 
             $result=$mysqli->query("INSERT INTO $table_tags (title,parent_id,lft,rgt,level,path,alias,published,access,params,metadata,urls,language,created_time,modified_time) 
-                                    VALUES ('$value1',1,$max,$max+1,1,'$value1','$value1',1,1,'{}','{}','{}','*','$date','$date'); ");
-            if(!$result)
+                                    VALUES ('$value1',1,$rgt_root_lv0,$rgt_root_lv0+1,1,'$value1','$value1',1,1,'{}','{}','{}','*','$date','$date'); ");
+            
+            if( ! $result)
             {
                 //No crated Tag
-                $error="Error 1, no se ha creado el tag:'$value1'";
+                $error="Error 2, no se ha creado el tag:'$value1'";
                 array_push($response_python["error"], $error );
                 continue;
             }
+
             //Get ID form db by Title again 
             $tag = $mysqli->query("SELECT id FROM $table_tags WHERE title='$value1'");
+            
             if ($tag->num_rows <= 0) 
             {
                 //If no exist tag, Error
@@ -147,29 +184,33 @@ foreach ($tags_ids as $key => $value)
                 array_push($response_python["error"], $error );
                 continue;
             } 
+
             array_push($response_python["response"], "Tag '$value1' Creado" );
-            
-            
         }
+
         //Save Tag ID 
         $tag_id=$tag->fetch_object()->id;
+
         //Verify tag exists
         $tag_map = $mysqli->query("SELECT * FROM $table_contentitem_tag_map WHERE core_content_id = $article_id AND tag_id = $tag_id ");
+        
         if ($tag_map->num_rows <= 0) 
         {   
             //No exist tag_map, create it              
             $result=$mysqli->query("INSERT INTO $table_contentitem_tag_map (type_alias,core_content_id,content_item_id,tag_id,tag_date,type_id) 
                                     VALUES ('com_content.article',$article_id,$article_id,$tag_id,'$date',1); ");
-            if(! $result)
+            if( ! $result)
             {
                 //If no exist tag, Error
                 $error="Error, no se ha creado el tag_map para unir contenido de id:'$article_id' con el tag de id:'$tag_id' ";
                 array_push($response_python["error"], $error );
+                continue;
             }                
             array_push($response_python["response"], "Asignado tag de id:'$tag_id' al conenido de id:'$article_id'" );
         }
     }
 }
+
 //Stop Connection DB
 $mysqli->close();
 
