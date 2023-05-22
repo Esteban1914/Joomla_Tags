@@ -205,7 +205,8 @@ foreach ($tags_ids as $key => $value)
                 $error="Error, no se ha creado el tag_map para unir contenido de id:'$article_id' con el tag de id:'$tag_id' ";
                 array_push($response_python["error"], $error );
                 continue;
-            }                
+            }     
+
             array_push($response_python["response"], "Asignado tag de id:'$tag_id' al conenido de id:'$article_id'" );
         }
     }
@@ -214,8 +215,6 @@ foreach ($tags_ids as $key => $value)
 //Stop Connection DB
 $mysqli->close();
 
-print(json_encode($response_python));
-
-exit;
+exit(json_encode($response_python));
 
 ?>
