@@ -1,0 +1,17 @@
+SET_TAG| 1
+TAG_TITLE| Abogados narcótradico Francia
+TAG_TITLE| Abogados penalistas Francia
+TAG_TITLE| Abogados penales Francia
+TAG_TITLE| Asesoramiento narcótradico Francia
+TAG_TITLE| Defensa personal narcótradico 
+TAG_TITLE| Expertos penalistas Francia
+TAG_TITLE| Abogados narcótradico Francia
+TAG_TITLE| Especialistas narcótradico Francia
+TAG_TITLE| Abogados drogas Francia
+TAG_TITLE| Tráfico drogas Francia
+TAG_TITLE| Asesoramiento legal narcótradico 
+TAG_TITLE| Defensa personal narcótradico 
+TAG_TITLE| Especialistas penales Francia
+TAG_TITLE| Abogados tráfico droga
+TAG_TITLE| Defensa penal especializada
+TAG_TITLE| Asesoría legal narcótradico Francia
