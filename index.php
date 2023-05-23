@@ -162,7 +162,7 @@ foreach ($recortes as $ind=>$value) {
                     array_push($response_python["response"], "Tag '$tag_title' creado" );
                 }
                 
-                //Save Tag ID 
+                //Get Tag ID 
                 $tag_id=$result->fetch_object()->id;
 
                 //Verify tag in tag_map exists        
