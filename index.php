@@ -100,13 +100,14 @@ foreach ($recortes as $ind=>$value) {
             }
             
             $article_title=$result->fetch_object()->title;
-            
             break;
         case preg_match("/^TAG_TITLE/", $line[0]):
             if($article_id != null)
             {
                 $tag_title=trim($line[1]);
-                
+                $tag_title_lnh=str_replace(array("#"," "),"-",$tag_title);
+                $tag_title_lnh=mb_strtolower($tag_title_lnh);
+                                
                 //Verify tag exists    
                 $result = $mysqli->query("SELECT id FROM $table_tags WHERE title='$tag_title'");
                 
@@ -140,7 +141,7 @@ foreach ($recortes as $ind=>$value) {
 
                     //Create tag with rgt 
                     $result=$mysqli->query("INSERT INTO $table_tags (title,parent_id,lft,rgt,level,path,alias,published,access,params,metadata,urls,language,created_time,modified_time) 
-                                            VALUES ('$tag_title',1,$rgt_root_lv0,$rgt_root_lv0+1,1,'$tag_title','$tag_title',1,1,'{}','{}','{}','*','$date','$date'); ");
+                                            VALUES ('$tag_title',1,$rgt_root_lv0,$rgt_root_lv0+1,1,'$tag_title_lnh','$tag_title_lnh',1,1,'{}','{}','{}','*','$date','$date'); ");
                     
                     if( ! $result)
                     {
@@ -168,13 +169,31 @@ foreach ($recortes as $ind=>$value) {
                 $tag_id=$result->fetch_object()->id;
 
                 //Verify tag in tag_map exists        
-                $tag_map = $mysqli->query("SELECT * FROM $table_contentitem_tag_map WHERE core_content_id = $article_id AND tag_id = $tag_id ");
-    
+                $tag_map = $mysqli->query("SELECT * FROM $table_contentitem_tag_map WHERE content_item_id = $article_id AND tag_id = $tag_id ");
+                
                 if ($tag_map->num_rows <= 0) 
                 {   
-                    //No exist tag_map, create it              
+                    //No exist tag_map, create it
+                    
+                    //Find core_content_id
+                    $result = $mysqli->query("SELECT core_content_id FROM $table_contentitem_tag_map WHERE content_item_id = $article_id ");
+                    $if_max=0;
+                    if ($result->num_rows <= 0) 
+                    {
+                        //If no exist core_content_id, find Max 
+                        $if_max=1;
+                        $result = $mysqli->query("SELECT MAX(core_content_id) as core_content_id FROM $table_contentitem_tag_map ");
+                        if ($result->num_rows <= 0) 
+                        {
+                            //if dont find max , error 
+                            array_push($response_python["error"], "Error 1, no se ha creado el tag_map para unir '$article_title (id:$article_id)' con el tag '$tag_title(id:$tag_id)' " );
+                        
+                            break;    
+                        }
+                    }
+                    $core_content_id=$result->fetch_object()->core_content_id + $if_max;     
                     $result=$mysqli->query("INSERT INTO $table_contentitem_tag_map (type_alias,core_content_id,content_item_id,tag_id,tag_date,type_id) 
-                                            VALUES ('com_content.article',$article_id,$article_id,$tag_id,'$date',1); ");
+                                            VALUES ('com_content.article',$core_content_id,$article_id,$tag_id,'$date',1); ");
                     if( ! $result)
                     {
                         //If no created tag_map, Error                    
