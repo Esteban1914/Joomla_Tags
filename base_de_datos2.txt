@@ -1,0 +1,7 @@
+HOST^/^^/^ 176.31.1.206:3306
+USER^/^^/^ abogadoenitalia_Mj8HU
+PASSWORD^/^^/^  Jg-T[5F6F(3/D|9H_8
+DATABASE^/^^/^ abogadoenitalia_abogadoenitaliacom
+URL^/^^/^ https://abogadoenitalia.com
+PREFIJO^/^^/^ qri8u_
+
