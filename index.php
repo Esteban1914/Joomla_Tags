@@ -1,6 +1,6 @@
 <?php
 
-/* ====== v2.2.2 ====== /*
+/* ====== v2.3.0 ====== /*
 
 /*****
  *
@@ -25,8 +25,16 @@ $response_python["response"]=array();
 $date = date ('Y-m-d H:m:s');
 $recortes = file("articolo.txt",  FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 $base_de_datos = file("base_de_datos.txt",  FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+$data=null;
 $article_id=null;
 $article_title=null;
+$tag_id=null;
+$tag_title=null;
+$tag_title_lnh=null;
+$article_body=null;
+$core_content_id=null;
+$result=null;
+$created=null;
 error_reporting(E_ERROR);
 
 function remove_utfo_bom($text){
@@ -78,7 +86,7 @@ $table_tags = $prefix_table.'tags';
 $table_contentitem_tag_map = $prefix_table.'contentitem_tag_map';
 $table_categories = $prefix_table.'categories';
 $table_content = $prefix_table.'content';
-$table_ucm = $prefix_table.'ucm_content';   
+$table_ucm_content = $prefix_table.'ucm_content';   
 $table_ucm_base = $prefix_table.'ucm_base';   
 
 //Init Connection DB
@@ -99,16 +107,20 @@ foreach ($recortes as $ind=>$value)
     {
         case preg_match("/^SET_TAG/", $line[0]):
             $article_id = trim($line[1]);
-            $result=$mysqli->query("SELECT title FROM $table_content WHERE id = $article_id ");
+            $result=$mysqli->query("SELECT title,introtext FROM $table_content WHERE id = $article_id ");
             if ($result->num_rows <= 0) 
             {   
                 //No exist article
                 array_push($response_python["error_id"],$article_id);
                 $article_id=null;
                 $article_title=null;
+                $article_body=null;
+                $article_intro=null;
                 break;
             } 
-            $article_title=$result->fetch_object()->title;
+            $data=$result->fetch_object();
+            $article_title=$data->title;
+            $article_intro=$data->introtext;
         break;
 
         case preg_match("/^TAG_TITLE/", $line[0]):
@@ -125,6 +137,7 @@ foreach ($recortes as $ind=>$value)
                 //Verify tag exists    
                 $result = $mysqli->query("SELECT id FROM $table_tags WHERE title='$tag_title'");
                 
+                $created=False;
                 if ($result->num_rows <= 0) 
                 {   
                     //If no exist tag, create it     
@@ -141,8 +154,8 @@ foreach ($recortes as $ind=>$value)
                         //VALUES (1, 0, 0, 1, 0, '', 'ROOT', 'root', '', '', 1, 0, '0000-00-00 00:00:00', 1, '{}', '', '', '', '', '2011-01-01 00:00:01','', 0, '0000-00-00 00:00:00', '', '', 0, '*', 1);");
                         //exit();
                     }   
-
-                    $rgt_root_lv0=$result->fetch_object()->rgt;
+                    $data=$result->fetch_object();
+                    $rgt_root_lv0=$data->rgt;
                     
                     //Set manualy new Max rgt ROOT Info
                     $result=$mysqli->query("UPDATE $table_tags SET rgt = $rgt_root_lv0 + 2  WHERE level = 0 AND title = 'ROOT'");
@@ -162,7 +175,7 @@ foreach ($recortes as $ind=>$value)
                     if( ! $result)
                     {
                         //No crated Tag
-                        array_push($response_python["error"], $tag_title);
+                        array_push($response_python["error"], $tag_title."(1)");
                         break;
                     }
                     
@@ -172,70 +185,73 @@ foreach ($recortes as $ind=>$value)
                     if ($result->num_rows <= 0) 
                     {
                         //If no exist tag again, Error
-                        array_push($response_python["error"], $tag_title);  
+                        array_push($response_python["error"], $tag_title." (2)");  
                         break;
                     } 
-
+                    
+                    $created=true;
                     #array_push($response_python["response"],$tag_title);
                 }
                 
                 //Get Tag ID 
-                $tag_id=$result->fetch_object()->id;
+                $data=$result->fetch_object();
+                $tag_id=$data->id;
 
                 //Verify tag in tag_map exists        
-                $tag_map = $mysqli->query("SELECT * FROM $table_contentitem_tag_map WHERE content_item_id = $article_id AND tag_id = $tag_id ");
+                $result = $mysqli->query("SELECT * FROM $table_contentitem_tag_map WHERE content_item_id = $article_id AND tag_id = $tag_id ");
                 
-                if ($tag_map->num_rows <= 0) 
+                if ($result->num_rows <= 0 ) 
                 {   
                     //No exist tag_map, create it
                     
                     //Find core_content_id into ucm_base
-                    $result = $mysqli->query("SELECT ucm_id as core_content_id FROM $table_ucm_base WHERE ucm_item_id = $article_id ");
+                    $result = $mysqli->query("SELECT ucm_id  FROM $table_ucm_base WHERE ucm_item_id = $article_id ");
                     if ($result->num_rows <= 0) 
                     {
                         //If no exist core_content_id, find Max 
-                        $result = $mysqli->query("SELECT MAX(ucm_id) as core_content_id FROM $table_ucm_base ");
+                        $result = $mysqli->query("SELECT MAX(ucm_id) as ucm_id FROM $table_ucm_base ");
                         if( ! $result)
                         {                
-                            array_push($response_python["error"],$tag_title);
+                            array_push($response_python["error"],$tag_title." (3)");
                             break;
                         }     
-                        
-                        $core_content_id=$result->fetch_object()->core_content_id + 1;
+                        $data=$result->fetch_object();
+                        $core_content_id=$data->ucm_id + 1;
                         
                         //Set core to ucm_base table
                         $result=$mysqli->query("INSERT INTO $table_ucm_base (ucm_id,ucm_item_id,ucm_type_id,ucm_language_id) 
                                             VALUES ($core_content_id,$article_id,1,1); ");
                         if( ! $result)
                         {                
-                            array_push($response_python["error"],$tag_title);
+                            array_push($response_python["error"],$tag_title." (4)");
                             break;
                         } 
                         
                         //Set core to ucm_content table
-                        $result=$mysqli->query("INSERT INTO $table_ucm (core_content_id,core_type_alias,core_title,core_state) 
-                                            VALUES ($core_content_id,'com_content.article','$article_title',1); ");
+                        $result=$mysqli->query("INSERT INTO $table_ucm_content (core_content_id,core_type_alias,core_title,core_state,core_body) 
+                                            VALUES ($core_content_id,'com_content.article','$article_title',1,'$article_intro'); ");
                         if( ! $result)
                         {                
-                            array_push($response_python["error"],$tag_title);
+                            array_push($response_python["error"],$tag_title." (5)");
                             break;
                         } 
-                        
                     }
                     else
-                        $core_content_id=$result->fetch_object()->core_content_id;
-                    
+                    {
+                        $data=$result->fetch_object();
+                        $core_content_id=$data->ucm_id;
+                    }
                     //Create tag_map
                     $result=$mysqli->query("INSERT INTO $table_contentitem_tag_map (type_alias,core_content_id,content_item_id,tag_id,tag_date,type_id) 
                                             VALUES ('com_content.article',$core_content_id,$article_id,$tag_id,'$date',1); ");
                     if( ! $result)
                     {
                         //If no created tag_map, Error                    
-                        array_push($response_python["error"],$tag_title);
+                        array_push($response_python["error"],$tag_title." (6)");
                         break;
                     }     
 
-                    array_push($response_python["response"],$tag_title);
+                    array_push($response_python["response"],$tag_title .($created==true ? " (+)" : " (-)"));
                 }
             }
 
