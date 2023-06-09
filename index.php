@@ -222,6 +222,8 @@ foreach ($recortes as $ind=>$value)
                     $result = $mysqli->query("SELECT ucm_id  FROM $table_ucm_base WHERE ucm_item_id = $article_id ");
                     if ($result->num_rows <= 0) 
                     {
+                        //No exist ucm, create it
+
                         //Get Max rgt from ROOT Asset Info 
                         $result=$mysqli->query("SELECT rgt FROM $table_assets WHERE level = 0 AND title = 'Root Asset'");
                         
@@ -242,7 +244,7 @@ foreach ($recortes as $ind=>$value)
                             die(json_encode($response_python));
                         }   
                         
-                        
+                        //Insert assets
                         $result=$mysqli->query("INSERT INTO $table_assets (parent_id,lft,rgt,level,name,title,rules) 
                                                 VALUES (1,$rgt_root_lv0,$rgt_root_lv0+1,1,'','','{}'); ");
                     
@@ -252,7 +254,7 @@ foreach ($recortes as $ind=>$value)
                             array_push($response_python["error"], $tag_title." (3)");
                             break;
                         }
-
+                        //Get new assert ID
                         $result=$mysqli->query("SELECT MAX(id) as id FROM $table_assets;");
                         
                         if ($result->num_rows <= 0) 
@@ -277,6 +279,7 @@ foreach ($recortes as $ind=>$value)
                             array_push($response_python["error"],$tag_title." (5)");
                             break;
                         } 
+                        //get new core_content id
                         $result=$mysqli->query("SELECT MAX(core_content_id) as core_content_id FROM $table_ucm_content;");
                         
                         if ($result->num_rows <= 0) 
@@ -289,12 +292,14 @@ foreach ($recortes as $ind=>$value)
                         $data=$result->fetch_object();
                         $core_content_id=$data->core_content_id;
 
+                        //Update name and title table_assets
                         $result=$mysqli->query("UPDATE $table_assets SET name = '#__ucm_content.$core_content_id', title='#__ucm_content.$core_content_id'  WHERE id=$assets_id");
                         if( ! $result)
                         {                
                             array_push($response_python["error"],$tag_title." (7)");
                             break;
                         } 
+
                         //Set core to ucm_base table
                         $result=$mysqli->query("INSERT INTO $table_ucm_base (ucm_id,ucm_item_id,ucm_type_id,ucm_language_id) 
                                             VALUES ($core_content_id,$article_id,1,1); ");
