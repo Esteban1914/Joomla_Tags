@@ -1,6 +1,0 @@
-HOST^/^^/^ 127.0.0.1
-USER^/^^/^ root
-PASSWORD^/^^/^ 
-DATABASE^/^^/^ mydb_joomlatest1
-URL^/^^/^ 
-PREFIJO^/^^/^ ug8lj_
