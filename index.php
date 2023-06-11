@@ -1,6 +1,6 @@
 <?php
 
-/* ====== v2.4.0 ====== /*
+/* ====== v2.5.0 ====== /*
 
 /*****
  *
@@ -138,10 +138,6 @@ foreach ($recortes as $ind=>$value)
             {
                 $tag_title=trim($line[1]);
 
-                //Format to alias and path
-                $tag_title_lnh=quitar_acentos($tag_title);
-                $tag_title_lnh=strtolower($tag_title_lnh);
-                $tag_title_lnh= str_replace(' ', '-', $tag_title_lnh);               
                 
                 //Verify tag exists    
                 $result = $mysqli->query("SELECT id FROM $table_tags WHERE title='$tag_title'");
@@ -150,7 +146,12 @@ foreach ($recortes as $ind=>$value)
                 if ($result->num_rows <= 0) 
                 {   
                     //If no exist tag, create it     
-
+                    
+                    //Format to alias and path
+                    $tag_title_lnh=quitar_acentos($tag_title);
+                    $tag_title_lnh=strtolower($tag_title_lnh);
+                    $tag_title_lnh= str_replace(' ', '-', $tag_title_lnh);               
+                    
                     //Get Max rgt from ROOT Tag Info 
                     $result=$mysqli->query("SELECT rgt FROM $table_tags WHERE level = 0 AND title = 'ROOT'");
                     
@@ -207,9 +208,18 @@ foreach ($recortes as $ind=>$value)
                 }
                 else
                 {
+                    
                     //Get Tag ID 
                     $data=$result->fetch_object();
                     $tag_id=$data->id;
+                    
+                    //Public Tags
+                    $result=$mysqli->query("UPDATE $table_tags SET published = 1  WHERE id = $tag_id ");
+                    if ( ! $result) 
+                    {
+                        array_push($response_python["error"], $tag_title."(3)");
+                        break;
+                    } 
                 }
                 //Verify tag in tag_map exists        
                 $result = $mysqli->query("SELECT * FROM $table_contentitem_tag_map WHERE content_item_id = $article_id AND tag_id = $tag_id ");
@@ -220,38 +230,52 @@ foreach ($recortes as $ind=>$value)
                     
                     //Find core_content_id into ucm_base
                     $result = $mysqli->query("SELECT ucm_id  FROM $table_ucm_base WHERE ucm_item_id = $article_id ");
+                    
                     if ($result->num_rows <= 0) 
                     {
                         //No exist ucm, create it
 
-                        //Get Max rgt from ROOT Asset Info 
-                        $result=$mysqli->query("SELECT rgt FROM $table_assets WHERE level = 0 AND title = 'Root Asset'");
+                        
+                        //**For Segurity Find Max, not inc+2 Root rgt***///
+
+                            //Get Max rgt from ROOT Asset Info 
+                            // $result=$mysqli->query("SELECT rgt FROM $table_assets WHERE level = 0 AND title = 'Root Asset'");
+                            
+                            // if ($result->num_rows <= 0) 
+                            // {
+                            //     array_push($response_python["error"], "Error, El parametro RGT de la fila ROOT de Asset no existe en la base de datos, se ha detenido el proceso" );
+                            //     die(json_encode($response_python));
+            
+                            // }   
+                            // $data=$result->fetch_object();
+                            // $rgt_root_lv0=$data->rgt;
+                            // //Set manualy new Max rgt ROOT Asset Info
+                            // $result=$mysqli->query("UPDATE $table_assets SET rgt = $rgt_root_lv0 + 2  WHERE level = 0 AND title = 'Root Asset'");
+                            
+                            // if ( ! $result) 
+                            // {
+                            //     array_push($response_python["error"], "Error, El parametro RGT de la fila ROOT de Asset no se ha podido modificar en la base de datos, se ha detenido el proceso" ); 
+                            //     die(json_encode($response_python));
+                            // }
+
+                        $result=$mysqli->query("SELECT MAX(rgt) as rgt FROM $table_assets");
                         
                         if ($result->num_rows <= 0) 
                         {
-                            array_push($response_python["error"], "Error, El parametro RGT de la fila ROOT de Asset no existe en la base de datos, se ha detenido el proceso" );
-                            die(json_encode($response_python));
+                            array_push($response_python["error"], $tag_title." (4)");
+                            break;
         
                         }   
                         $data=$result->fetch_object();
-                        $rgt_root_lv0=$data->rgt;
-                        //Set manualy new Max rgt ROOT Asset Info
-                        $result=$mysqli->query("UPDATE $table_assets SET rgt = $rgt_root_lv0 + 2  WHERE level = 0 AND title = 'Root Asset'");
-                        
-                        if ( ! $result) 
-                        {
-                            array_push($response_python["error"], "Error, El parametro RGT de la fila ROOT de Asset no se ha podido modificar en la base de datos, se ha detenido el proceso" ); 
-                            die(json_encode($response_python));
-                        }   
-                        
+                        $rgt_root_lv0=$data->rgt + 1;
                         //Insert assets
                         $result=$mysqli->query("INSERT INTO $table_assets (parent_id,lft,rgt,level,name,title,rules) 
-                                                VALUES (1,$rgt_root_lv0,$rgt_root_lv0+1,1,'','','{}'); ");
+                                                VALUES (1,$rgt_root_lv0,$rgt_root_lv0+1,1,' ',' ','{}'); ");
                     
                         if( ! $result)
                         {
                             //No inserted asset
-                            array_push($response_python["error"], $tag_title." (3)");
+                            array_push($response_python["error"], $tag_title." (5)");
                             break;
                         }
                         //Get new assert ID
@@ -260,7 +284,7 @@ foreach ($recortes as $ind=>$value)
                         if ($result->num_rows <= 0) 
                         {
                             //No selected assets id
-                            array_push($response_python["error"], $tag_title." (4)");
+                            array_push($response_python["error"], $tag_title." (6)");
                             break;
                         }
 
@@ -276,7 +300,7 @@ foreach ($recortes as $ind=>$value)
                                             VALUES ('com_content.article','$article_title','$article_alias',1,'$article_intro',1,'$param','$metadata','$date','*',$article_id,$assets_id,'$iamges','$urls','','',$article_catid,1); ");
                         if( ! $result)
                         {                
-                            array_push($response_python["error"],$tag_title." (5)");
+                            array_push($response_python["error"],$tag_title." (7)");
                             break;
                         } 
                         //get new core_content id
@@ -285,7 +309,7 @@ foreach ($recortes as $ind=>$value)
                         if ($result->num_rows <= 0) 
                         {
                             //No selected assets id
-                            array_push($response_python["error"], $tag_title." (6)");
+                            array_push($response_python["error"], $tag_title." (8)");
                             break;
                         }
 
@@ -296,7 +320,7 @@ foreach ($recortes as $ind=>$value)
                         $result=$mysqli->query("UPDATE $table_assets SET name = '#__ucm_content.$core_content_id', title='#__ucm_content.$core_content_id'  WHERE id=$assets_id");
                         if( ! $result)
                         {                
-                            array_push($response_python["error"],$tag_title." (7)");
+                            array_push($response_python["error"],$tag_title." (9)");
                             break;
                         } 
 
@@ -305,7 +329,7 @@ foreach ($recortes as $ind=>$value)
                                             VALUES ($core_content_id,$article_id,1,1); ");
                         if( ! $result)
                         {                
-                            array_push($response_python["error"],$tag_title." (8)");
+                            array_push($response_python["error"],$tag_title." (10)");
                             break;
                         } 
                     }
@@ -320,7 +344,7 @@ foreach ($recortes as $ind=>$value)
                     if( ! $result)
                     {
                         //If no created tag_map, Error                    
-                        array_push($response_python["error"],$tag_title." (8)");
+                        array_push($response_python["error"],$tag_title." (11)");
                         break;
                     }     
 
