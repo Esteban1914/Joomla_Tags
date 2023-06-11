@@ -1,6 +1,6 @@
 <?php
 
-/* ====== v2.5.2 ====== /*
+/* ====== v2.5.3 ====== /*
 
 /*****
  *
@@ -233,7 +233,7 @@ foreach ($recortes as $ind=>$value)
                     if ( ! $result) 
                     {
                         print($mysqli -> error);
-                        array_push($response_python["error"], $tag_title." (3)");
+                        array_push($response_python["error"], $tag_title." (3).");
                         break;
                     } 
                 }
@@ -286,7 +286,7 @@ foreach ($recortes as $ind=>$value)
                         $rgt_root_lv0=$data->rgt + 1;
                         //Insert assets
                         $result=$mysqli->query("INSERT INTO $table_assets (parent_id,lft,rgt,level,name,title,rules) 
-                                                VALUES (1,$rgt_root_lv0,$rgt_root_lv0+1,1,' ',' ','{}'); ");
+                                                VALUES (1,$rgt_root_lv0,$rgt_root_lv0+1,1,'NullValue$rgt_root_lv0','NullValue$rgt_root_lv0','{}'); ");
                     
                         if( ! $result)
                         {
