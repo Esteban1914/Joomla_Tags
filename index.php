@@ -228,7 +228,7 @@ foreach ($recortes as $ind=>$value)
                     $data=$result->fetch_object();
                     $tag_id=$data->id;
                     
-                    //Public Tags
+                    //Publish Tags
                     $result=$mysqli->query("UPDATE $table_tags SET published = 1  WHERE id = $tag_id; ");
                     if ( ! $result) 
                     {
