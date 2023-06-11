@@ -1,6 +1,6 @@
 <?php
 
-/* ====== v2.5.1 ====== /*
+/* ====== v2.5.2 ====== /*
 
 /*****
  *
@@ -152,30 +152,43 @@ foreach ($recortes as $ind=>$value)
                     $tag_title_lnh=strtolower($tag_title_lnh);
                     $tag_title_lnh= str_replace(' ', '-', $tag_title_lnh);               
                     
-                    //Get Max rgt from ROOT Tag Info 
-                    $result=$mysqli->query("SELECT rgt FROM $table_tags WHERE level = 0 AND title = 'ROOT'");
+                    //**For Segurity Find Max, not inc+2 Root rgt***///
+
+                        // //Get Max rgt from ROOT Tag Info 
+                        // $result=$mysqli->query("SELECT rgt FROM $table_tags WHERE level = 0 AND title = 'ROOT'");
+                        
+                        // if ($result->num_rows <= 0) 
+                        // {
+                        //     array_push($response_python["error"], "Error, El parametro RGT de la fila ROOT de Tags no existe en la base de datos, se ha detenido el proceso" );
+                        //     die(json_encode($response_python));
+                        //     //Code for Create ROOT row into tags_table
+                        //     //$mysqli->query("INSERT INTO $table_tags (`id`, `parent_id`, `lft`, `rgt`, `level`, `path`, `title`, `alias`, `note`, `description`, `published`, `checked_out`, `checked_out_time`, `access`, `params`, `metadesc`, `metakey`, `metadata`, `created_user_id`, `created_time`,`created_by_alias`, `modified_user_id`, `modified_time`, `images`, `urls`, `hits`, `language`, `version`)
+                        //     //VALUES (1, 0, 0, 1, 0, '', 'ROOT', 'root', '', '', 1, 0, '0000-00-00 00:00:00', 1, '{}', '', '', '', '', '2011-01-01 00:00:01','', 0, '0000-00-00 00:00:00', '', '', 0, '*', 1);");
+                        //     //exit();
+                        // }   
+                        // $data=$result->fetch_object();
+                        // $rgt_root_lv0=$data->rgt;
+                        
+                        // //Set manualy new Max rgt ROOT Tag Info
+                        // $result=$mysqli->query("UPDATE $table_tags SET rgt = $rgt_root_lv0 + 2  WHERE level = 0 AND title = 'ROOT'");
+                        
+                        // if ( ! $result) 
+                        // {
+                        //     array_push($response_python["error"], "Error, El parametro RGT de la fila ROOT de Tags no se ha podido modificar en la base de datos, se ha detenido el proceso" ); 
+                        //     die(json_encode($response_python));
+                        // }   
+                    
+                    $result=$mysqli->query("SELECT MAX(rgt) as rgt FROM $table_tags;");
                     
                     if ($result->num_rows <= 0) 
                     {
-                        array_push($response_python["error"], "Error, El parametro RGT de la fila ROOT de Tags no existe en la base de datos, se ha detenido el proceso" );
-                        die(json_encode($response_python));
-                        //Code for Create ROOT row into tags_table
-                        //$mysqli->query("INSERT INTO $table_tags (`id`, `parent_id`, `lft`, `rgt`, `level`, `path`, `title`, `alias`, `note`, `description`, `published`, `checked_out`, `checked_out_time`, `access`, `params`, `metadesc`, `metakey`, `metadata`, `created_user_id`, `created_time`,`created_by_alias`, `modified_user_id`, `modified_time`, `images`, `urls`, `hits`, `language`, `version`)
-                        //VALUES (1, 0, 0, 1, 0, '', 'ROOT', 'root', '', '', 1, 0, '0000-00-00 00:00:00', 1, '{}', '', '', '', '', '2011-01-01 00:00:01','', 0, '0000-00-00 00:00:00', '', '', 0, '*', 1);");
-                        //exit();
-                    }   
+                        array_push($response_python["error"], $tag_title." (0)");
+                        break;
+                    }
+
                     $data=$result->fetch_object();
                     $rgt_root_lv0=$data->rgt;
                     
-                    //Set manualy new Max rgt ROOT Tag Info
-                    $result=$mysqli->query("UPDATE $table_tags SET rgt = $rgt_root_lv0 + 2  WHERE level = 0 AND title = 'ROOT'");
-                    
-                    if ( ! $result) 
-                    {
-                        array_push($response_python["error"], "Error, El parametro RGT de la fila ROOT de Tags no se ha podido modificar en la base de datos, se ha detenido el proceso" ); 
-                        die(json_encode($response_python));
-                    }   
-
                     //Create tag with rgt 
                     $param='{"tag_layout":"","tag_link_class":"label label-info"}';
                     
@@ -191,7 +204,7 @@ foreach ($recortes as $ind=>$value)
                     }
                     
                     //Get Tag ID form db 
-                    $result = $mysqli->query("SELECT id FROM $table_tags WHERE title='$tag_title'");
+                    $result = $mysqli->query("SELECT id FROM $table_tags WHERE title='$tag_title';");
                     
                     if ($result->num_rows <= 0) 
                     {
@@ -216,23 +229,23 @@ foreach ($recortes as $ind=>$value)
                     $tag_id=$data->id;
                     
                     //Public Tags
-                    $result=$mysqli->query("UPDATE $table_tags SET published = 1  WHERE id = $tag_id ");
+                    $result=$mysqli->query("UPDATE $table_tags SET published = 1  WHERE id = $tag_id; ");
                     if ( ! $result) 
                     {
                         print($mysqli -> error);
-                        array_push($response_python["error"], $tag_title."(3)");
+                        array_push($response_python["error"], $tag_title." (3)");
                         break;
                     } 
                 }
                 //Verify tag in tag_map exists        
-                $result = $mysqli->query("SELECT * FROM $table_contentitem_tag_map WHERE content_item_id = $article_id AND tag_id = $tag_id ");
+                $result = $mysqli->query("SELECT * FROM $table_contentitem_tag_map WHERE content_item_id = $article_id AND tag_id = $tag_id ;");
                 
                 if ($result->num_rows <= 0 ) 
                 {   
                     //No exist tag_map, create it
                     
                     //Find core_content_id into ucm_base
-                    $result = $mysqli->query("SELECT ucm_id  FROM $table_ucm_base WHERE ucm_item_id = $article_id ");
+                    $result = $mysqli->query("SELECT ucm_id  FROM $table_ucm_base WHERE ucm_item_id = $article_id ;");
                     
                     if ($result->num_rows <= 0) 
                     {
