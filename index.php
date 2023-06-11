@@ -233,7 +233,7 @@ foreach ($recortes as $ind=>$value)
                     if ( ! $result) 
                     {
                         print($mysqli -> error);
-                        array_push($response_python["error"], $tag_title." (3).");
+                        array_push($response_python["error"], $tag_title." (3)");
                         break;
                     } 
                 }
@@ -316,7 +316,8 @@ foreach ($recortes as $ind=>$value)
                         $result=$mysqli->query("INSERT INTO $table_ucm_content (core_type_alias,core_title,core_alias,core_state,core_body,core_access,core_params,core_metadata,core_created_time,core_language,core_content_item_id,asset_id,core_images,core_urls,core_metakey,core_metadesc,core_catid,core_type_id) 
                                             VALUES ('com_content.article','$article_title','$article_alias',1,'$article_intro',1,'$param','$metadata','$date','*',$article_id,$assets_id,'$iamges','$urls','','',$article_catid,1); ");
                         if( ! $result)
-                        {                
+                        {              
+                            //No Inserted ucm_content  
                             print($mysqli -> error);
                             array_push($response_python["error"],$tag_title." (7)");
                             break;
@@ -326,7 +327,7 @@ foreach ($recortes as $ind=>$value)
                         
                         if ($result->num_rows <= 0) 
                         {
-                            //No selected assets id
+                            //No selected core_content_id
                             array_push($response_python["error"], $tag_title." (8)");
                             break;
                         }
