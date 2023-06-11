@@ -185,6 +185,7 @@ foreach ($recortes as $ind=>$value)
                     if( ! $result)
                     {
                         //No crated Tag
+                        print($mysqli -> error);
                         array_push($response_python["error"], $tag_title."(1)");
                         break;
                     }
@@ -195,6 +196,7 @@ foreach ($recortes as $ind=>$value)
                     if ($result->num_rows <= 0) 
                     {
                         //If no exist tag again, Error
+                        print($mysqli -> error);
                         array_push($response_python["error"], $tag_title." (2)");  
                         break;
                     } 
@@ -217,6 +219,7 @@ foreach ($recortes as $ind=>$value)
                     $result=$mysqli->query("UPDATE $table_tags SET published = 1  WHERE id = $tag_id ");
                     if ( ! $result) 
                     {
+                        print($mysqli -> error);
                         array_push($response_python["error"], $tag_title."(3)");
                         break;
                     } 
@@ -275,6 +278,7 @@ foreach ($recortes as $ind=>$value)
                         if( ! $result)
                         {
                             //No inserted asset
+                            print($mysqli -> error);
                             array_push($response_python["error"], $tag_title." (5)");
                             break;
                         }
@@ -300,6 +304,7 @@ foreach ($recortes as $ind=>$value)
                                             VALUES ('com_content.article','$article_title','$article_alias',1,'$article_intro',1,'$param','$metadata','$date','*',$article_id,$assets_id,'$iamges','$urls','','',$article_catid,1); ");
                         if( ! $result)
                         {                
+                            print($mysqli -> error);
                             array_push($response_python["error"],$tag_title." (7)");
                             break;
                         } 
@@ -320,6 +325,7 @@ foreach ($recortes as $ind=>$value)
                         $result=$mysqli->query("UPDATE $table_assets SET name = '#__ucm_content.$core_content_id', title='#__ucm_content.$core_content_id'  WHERE id=$assets_id");
                         if( ! $result)
                         {                
+                            print($mysqli -> error);
                             array_push($response_python["error"],$tag_title." (9)");
                             break;
                         } 
@@ -329,6 +335,7 @@ foreach ($recortes as $ind=>$value)
                                             VALUES ($core_content_id,$article_id,1,1); ");
                         if( ! $result)
                         {                
+                            print($mysqli -> error);
                             array_push($response_python["error"],$tag_title." (10)");
                             break;
                         } 
@@ -344,6 +351,7 @@ foreach ($recortes as $ind=>$value)
                     if( ! $result)
                     {
                         //If no created tag_map, Error                    
+                        print($mysqli -> error);
                         array_push($response_python["error"],$tag_title." (11)");
                         break;
                     }     
