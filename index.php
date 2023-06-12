@@ -1,6 +1,6 @@
 <?php
 
-/* ====== v2.5.4 ====== /*
+/* ====== v2.5.5 ====== /*
 
 /*****
  *
@@ -213,8 +213,7 @@ foreach ($recortes as $ind=>$value)
                     if ($result->num_rows <= 0) 
                     {
                         //If no exist tag again, Error
-                        print($mysqli -> error);
-                        array_push($response_python["error"], $tag_title." (2)");  
+                        array_push($response_python["error"], $tag_title." (2)->$mysqli->error");  
                         break;
                     } 
                     
@@ -236,8 +235,7 @@ foreach ($recortes as $ind=>$value)
                     $result=$mysqli->query("UPDATE $table_tags SET published = 1  WHERE id = $tag_id; ");
                     if ( ! $result) 
                     {
-                        print($mysqli -> error);
-                        array_push($response_python["error"], $tag_title." (3)");
+                        array_push($response_python["error"], $tag_title." (3)->$mysqli->error");
                         break;
                     } 
                 }
@@ -303,8 +301,7 @@ foreach ($recortes as $ind=>$value)
                         if( ! $result)
                         {
                             //No inserted asset
-                            print($mysqli -> error);
-                            array_push($response_python["error"], $tag_title." (5)");
+                            array_push($response_python["error"], $tag_title." (5)->$mysqli->error");
                             break;
                         }
                         //Get new assert ID
@@ -330,8 +327,7 @@ foreach ($recortes as $ind=>$value)
                         if( ! $result)
                         {              
                             //No Inserted ucm_content  
-                            print($mysqli -> error);
-                            array_push($response_python["error"],$tag_title." (7)");
+                            array_push($response_python["error"],$tag_title." (7)->$mysqli->error");
                             break;
                         } 
                         //get new core_content id
@@ -351,8 +347,7 @@ foreach ($recortes as $ind=>$value)
                         $result=$mysqli->query("UPDATE $table_assets SET name = '#__ucm_content.$core_content_id', title='#__ucm_content.$core_content_id'  WHERE id=$assets_id");
                         if( ! $result)
                         {                
-                            print($mysqli -> error);
-                            array_push($response_python["error"],$tag_title." (9)");
+                            array_push($response_python["error"],$tag_title." (9)->$mysqli->error");
                             break;
                         } 
 
@@ -361,8 +356,7 @@ foreach ($recortes as $ind=>$value)
                                             VALUES ($core_content_id,$article_id,1,1); ");
                         if( ! $result)
                         {                
-                            print($mysqli -> error);
-                            array_push($response_python["error"],$tag_title." (10)");
+                            array_push($response_python["error"],$tag_title." (10)->$mysqli->error");
                             break;
                         } 
                     }
@@ -376,9 +370,8 @@ foreach ($recortes as $ind=>$value)
                                             VALUES ('com_content.article',$core_content_id,$article_id,$tag_id,'$date',1); ");
                     if( ! $result)
                     {
-                        //If no created tag_map, Error                    
-                        print($mysqli -> error);
-                        array_push($response_python["error"],$tag_title." (11)");
+                        //If no created tag_map, Error       
+                        array_push($response_python["error"],$tag_title." (11)->$mysqli->error");
                         break;
                     }     
 
