@@ -187,8 +187,12 @@ foreach ($recortes as $ind=>$value)
                     }
 
                     $data=$result->fetch_object();
+                    
                     $rgt_root_lv0=$data->rgt;
                     
+                    // if ($rgt_root_lv0 == null)
+                    //     $rgt_root_lv0=1;
+
                     //Create tag with rgt 
                     $param='{"tag_layout":"","tag_link_class":"label label-info"}';
                     
@@ -198,7 +202,7 @@ foreach ($recortes as $ind=>$value)
                     if( ! $result)
                     {
                         //No crated Tag
-                        print($mysqli -> error);
+                        //print($mysqli -> error);
                         array_push($response_python["error"], $tag_title."(1)");
                         break;
                     }
