@@ -187,12 +187,12 @@ foreach ($recortes as $ind=>$value)
                     }
 
                     $data=$result->fetch_object();
-                    
                     $rgt_root_lv0=$data->rgt;
                     
-                    // if ($rgt_root_lv0 == null)
-                    //     $rgt_root_lv0=1;
-
+                    if ($rgt_root_lv0 == null)
+                        $rgt_root_lv0=0;
+                    else
+                        $rgt_root_lv0+=1;
                     //Create tag with rgt 
                     $param='{"tag_layout":"","tag_link_class":"label label-info"}';
                     
@@ -286,8 +286,16 @@ foreach ($recortes as $ind=>$value)
                             break;
         
                         }   
+
+                        
                         $data=$result->fetch_object();
-                        $rgt_root_lv0=$data->rgt + 1;
+                        $rgt_root_lv0=$data->rgt;
+                        
+                        if ($rgt_root_lv0 == null)
+                            $rgt_root_lv0=0;
+                        else
+                            $rgt_root_lv0+=1;
+                        
                         //Insert assets
                         $result=$mysqli->query("INSERT INTO $table_assets (parent_id,lft,rgt,level,name,title,rules) 
                                                 VALUES (1,$rgt_root_lv0,$rgt_root_lv0+1,1,'NullValue$rgt_root_lv0','NullValue$rgt_root_lv0','{}'); ");
