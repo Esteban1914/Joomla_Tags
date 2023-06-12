@@ -1,6 +1,6 @@
 <?php
 
-/* ====== v2.5.5 ====== /*
+/* ====== v2.6.0 ====== /*
 
 /*****
  *
@@ -196,7 +196,7 @@ foreach ($recortes as $ind=>$value)
                     //Create tag with rgt 
                     $param='{"tag_layout":"","tag_link_class":"label label-info"}';
                     
-                    $result=$mysqli->query("INSERT INTO $table_tags (title,lft,rgt,path,alias,level,parent_id,published,access,params,language,created_time,modified_time) 
+                    $result=$mysqli->query("INSERT INTO `$table_tags` (`title`,`lft`,`rgt`,`path`,`alias`,`level`,`parent_id`,`published`,`access`,`params`,`language`,`created_time`,`modified_time`) 
                                             VALUES ('$tag_title',$rgt_root_lv0,$rgt_root_lv0+1,'$tag_title_lnh','$tag_title_lnh',1,1,1,1,'$param','*','$date','$date'); ");
                     
                     if( ! $result)
@@ -295,7 +295,7 @@ foreach ($recortes as $ind=>$value)
                             $rgt_root_lv0+=1;
                         
                         //Insert assets
-                        $result=$mysqli->query("INSERT INTO $table_assets (parent_id,lft,rgt,level,name,title,rules) 
+                        $result=$mysqli->query("INSERT INTO `$table_assets` (`parent_id`,`lft`,`rgt`,`level`,`name`,`title`,`rules`) 
                                                 VALUES (1,$rgt_root_lv0,$rgt_root_lv0+1,1,'NullValue$rgt_root_lv0','NullValue$rgt_root_lv0','{}'); ");
                     
                         if( ! $result)
@@ -322,7 +322,7 @@ foreach ($recortes as $ind=>$value)
                         $iamges='{"image_intro":"","float_intro":"","image_intro_alt":"","image_intro_caption":"","image_fulltext":"","float_fulltext":"","image_fulltext_alt":"","image_fulltext_caption":""}';
                         $urls='{"urla":false,"urlatext":"","targeta":"","urlb":false,"urlbtext":"","targetb":"","urlc":false,"urlctext":"","targetc":""}';
                         //Set core to ucm_content table
-                        $result=$mysqli->query("INSERT INTO $table_ucm_content (core_type_alias,core_title,core_alias,core_state,core_body,core_access,core_params,core_metadata,core_created_time,core_language,core_content_item_id,asset_id,core_images,core_urls,core_metakey,core_metadesc,core_catid,core_type_id) 
+                        $result=$mysqli->query("INSERT INTO `$table_ucm_content` (`core_type_alias`,`core_title`,`core_alias`,`core_state`,`core_body`,`core_access`,`core_params`,`core_metadata`,`core_created_time`,`core_language`,`core_content_item_id`,`asset_id`,`core_images`,`core_urls`,`core_metakey`,`core_metadesc`,`core_catid`,`core_type_id`) 
                                             VALUES ('com_content.article','$article_title','$article_alias',1,'$article_intro',1,'$param','$metadata','$date','*',$article_id,$assets_id,'$iamges','$urls','','',$article_catid,1); ");
                         if( ! $result)
                         {              
@@ -352,7 +352,7 @@ foreach ($recortes as $ind=>$value)
                         } 
 
                         //Set core to ucm_base table
-                        $result=$mysqli->query("INSERT INTO $table_ucm_base (ucm_id,ucm_item_id,ucm_type_id,ucm_language_id) 
+                        $result=$mysqli->query("INSERT INTO `$table_ucm_base` (`ucm_id`,`ucm_item_id`,`ucm_type_id`,`ucm_language_id`) 
                                             VALUES ($core_content_id,$article_id,1,1); ");
                         if( ! $result)
                         {                
@@ -366,7 +366,7 @@ foreach ($recortes as $ind=>$value)
                         $core_content_id=$data->ucm_id;
                     }
                     //Create tag_map
-                    $result=$mysqli->query("INSERT INTO $table_contentitem_tag_map (type_alias,core_content_id,content_item_id,tag_id,tag_date,type_id) 
+                    $result=$mysqli->query("INSERT INTO `$table_contentitem_tag_map` (`type_alias`,`core_content_id`,`content_item_id`,`tag_id`,`tag_date`,`type_id`) 
                                             VALUES ('com_content.article',$core_content_id,$article_id,$tag_id,'$date',1); ");
                     if( ! $result)
                     {
