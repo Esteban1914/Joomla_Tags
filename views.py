@@ -1,3 +1,6 @@
+"""
+    /* ====== v1.0.0 ====== /*
+"""
 from django.http import JsonResponse,HttpResponse
 from django.db.utils import OperationalError
 
